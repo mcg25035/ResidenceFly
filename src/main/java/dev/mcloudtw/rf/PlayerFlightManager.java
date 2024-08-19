@@ -1,6 +1,10 @@
 package dev.mcloudtw.rf;
 
+import dev.mcloudtw.rf.utils.PlayerUtils;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -13,33 +17,47 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerFlightManager {
-    public static HashMap<Player, PlayerFlightManager> playerFlightManagerHashMap = new HashMap<>();
+    public static HashMap<OfflinePlayer, PlayerFlightManager> playerFlightManagerHashMap = new HashMap<>();
     public static Path playerFlightDataPath = Main.plugin.getDataFolder().toPath().resolve("playerFlightData");
-    public static int defaultSecondsLeftEveryDay = 4000;
 
     public int defaultSecondsLeft;
     public int additionalSecondsLeft;
     public boolean enabled;
     public Date lastResetTime;
-    public Player player;
+    public OfflinePlayer player;
     public BukkitTask task;
 
-    private PlayerFlightManager(int defaultSecondsLeft, int additionalSecondsLeft, long timestamp, Player player) {
+    private PlayerFlightManager(int defaultSecondsLeft, int additionalSecondsLeft, long timestamp, OfflinePlayer player) {
         this.defaultSecondsLeft = defaultSecondsLeft;
         this.additionalSecondsLeft = additionalSecondsLeft;
         this.lastResetTime = new Date(timestamp);
         this.enabled = false;
         this.player = player;
         playerFlightManagerHashMap.put(player, this);
+        checkReset();
     }
 
-    public static PlayerFlightManager loadPlayerFlightData(Player player) {
+    public void checkReset() {
+        if (defaultSecondsLeft > Main.plugin.defaultPlayerFlightSeconds) {
+            defaultSecondsLeft = Main.plugin.defaultPlayerFlightSeconds;
+            saveToFile();
+        }
+        if (lastResetTime.after(Main.plugin.lastResetTime)) return;
+        defaultSecondsLeft += Main.plugin.defaultPlayerFlightSeconds;
+        if (defaultSecondsLeft > Main.plugin.defaultPlayerFlightSeconds) {
+            defaultSecondsLeft = Main.plugin.defaultPlayerFlightSeconds;
+        }
+        lastResetTime = new Date();
+        saveToFile();
+    }
+
+    public static PlayerFlightManager loadPlayerFlightData(OfflinePlayer player) {
         if (playerFlightManagerHashMap.containsKey(player)) {
             return playerFlightManagerHashMap.get(player);
         }
         File file = playerFlightDataPath.resolve(player.getUniqueId() + ".yml").toFile();
         if (!file.exists()) {
-            return new PlayerFlightManager(defaultSecondsLeftEveryDay, 0, System.currentTimeMillis(), player);
+            return new PlayerFlightManager(Main.plugin.defaultPlayerFlightSeconds, 0, System.currentTimeMillis(), player);
         }
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
         int defaultSecondsLeft = fileConfiguration.getInt("defaultSecondsLeft");
@@ -66,17 +84,34 @@ public class PlayerFlightManager {
         });
     }
 
-    public void enableFlight(Player player) {
+    public void enableFlight() {
+        if (!this.player.isOnline()) return;
+        Player player = this.player.getPlayer();
         player.setAllowFlight(true);
         player.setFlying(true);
         enabled = true;
         AtomicInteger autoSave = new AtomicInteger(0);
         task = Bukkit.getScheduler().runTaskTimer(Main.plugin, () -> {
+            checkReset();
+
+            if (!player.isOnline()) {
+                disableFlight();
+                return;
+            }
+
             if (autoSave.getAndIncrement() % 60 == 0) {
                 saveToFile();
             }
             if (defaultSecondsLeft + additionalSecondsLeft <= 0) {
-                disableFlight(player);
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                "<red>飛行時間已用完</red>"
+                ));
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                "<white>飛行已關閉</white>"
+                ));
+                disableFlight();
                 return;
             }
             if (defaultSecondsLeft <= 0) {
@@ -88,12 +123,15 @@ public class PlayerFlightManager {
         }, 0, 20);
     }
 
-    public void disableFlight(Player player) {
-        player.setAllowFlight(false);
-        player.setFlying(false);
+    public void disableFlight() {
         enabled = false;
         task.cancel();
         saveToFile();
+
+        if (!this.player.isOnline()) return;
+        Player player = this.player.getPlayer();
+        assert player != null;
+        PlayerUtils.safeLandPlayer(player);
 
     }
 

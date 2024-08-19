@@ -4,10 +4,14 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.event.ResidenceChangedEvent;
 import com.bekvon.bukkit.residence.event.ResidencePlayerEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.protection.FlagPermissions;
+import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class Events implements Listener {
     @EventHandler
@@ -16,20 +20,32 @@ public class Events implements Listener {
         ClaimedResidence resDest = event.getTo();
         boolean hasFlightPermission = false;
         if (resDest != null) {
-            hasFlightPermission = resDest.getPermissions().playerHas(player, Flags.fly, true);
-            hasFlightPermission = hasFlightPermission || resDest.getPermissions().playerHas(player, Flags.admin, true);
+            hasFlightPermission = resDest.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);
+            hasFlightPermission = hasFlightPermission || resDest.getPermissions().playerHas(player, Flags.admin, FlagPermissions.FlagCombo.OnlyTrue);
             hasFlightPermission = hasFlightPermission || resDest.isOwner(player);
         }
         PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
         if (pfm.enabled && !hasFlightPermission) {
-            pfm.disableFlight(player);
+            pfm.disableFlight();
             player.sendMessage(MiniMessage.miniMessage().deserialize(
                     "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                            "<gradient:white:gray> 你已經離開了領地，飛行已經被關閉 </gradient>" +
-                            "</gradient>"
+                            "<red>你已經離開了領地，飛行已經被關閉 </red>"
             ));
         }
+    }
 
+    @EventHandler
+    public void PlayerJoinEvent(PlayerJoinEvent event) {
+        if (!event.getPlayer().getAllowFlight()) return;
+        PlayerUtils.safeLandPlayer(event.getPlayer());
+    }
 
+    @EventHandler
+    public void PlayerQuitEvent(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
+        if (pfm.enabled) {
+            pfm.disableFlight();
+        }
     }
 }
