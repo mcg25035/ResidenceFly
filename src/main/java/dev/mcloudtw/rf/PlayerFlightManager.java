@@ -3,17 +3,17 @@ package dev.mcloudtw.rf;
 import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerFlightManager {
@@ -25,7 +25,8 @@ public class PlayerFlightManager {
     public boolean enabled;
     public Date lastResetTime;
     public OfflinePlayer player;
-    public BukkitTask task;
+    public TimerTask task;
+    public AtomicInteger autoSave = new AtomicInteger(0);
 
     private PlayerFlightManager(int defaultSecondsLeft, int additionalSecondsLeft, long timestamp, OfflinePlayer player) {
         this.defaultSecondsLeft = defaultSecondsLeft;
@@ -84,43 +85,50 @@ public class PlayerFlightManager {
         });
     }
 
+    public void flightTimerOnSecond() {
+        checkReset();
+
+        if (!player.isOnline()) {
+            disableFlight();
+            return;
+        }
+
+        if (autoSave.getAndIncrement() % 60 == 0) {
+            saveToFile();
+        }
+        if (defaultSecondsLeft + additionalSecondsLeft <= 0) {
+            player.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                            "<red>飛行時間已用完</red>"
+            ));
+            player.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                            "<red>飛行已關閉</red>"
+            ));
+            disableFlight();
+            return;
+        }
+        if (defaultSecondsLeft <= 0) {
+            additionalSecondsLeft--;
+        } else {
+            defaultSecondsLeft--;
+        }
+        saveToFile();
+    }
+
     public void enableFlight() {
         if (!this.player.isOnline()) return;
         Player player = this.player.getPlayer();
         player.setAllowFlight(true);
         player.setFlying(true);
         enabled = true;
-        AtomicInteger autoSave = new AtomicInteger(0);
-        task = Bukkit.getScheduler().runTaskTimer(Main.plugin, () -> {
-            checkReset();
-
-            if (!player.isOnline()) {
-                disableFlight();
-                return;
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                Bukkit.getScheduler().runTask(Main.plugin, PlayerFlightManager.this::flightTimerOnSecond);
             }
-
-            if (autoSave.getAndIncrement() % 60 == 0) {
-                saveToFile();
-            }
-            if (defaultSecondsLeft + additionalSecondsLeft <= 0) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                "<red>飛行時間已用完</red>"
-                ));
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                "<white>飛行已關閉</white>"
-                ));
-                disableFlight();
-                return;
-            }
-            if (defaultSecondsLeft <= 0) {
-                additionalSecondsLeft--;
-            } else {
-                defaultSecondsLeft--;
-            }
-            saveToFile();
-        }, 0, 20);
+        };
+        new Timer().scheduleAtFixedRate(task, 0, 1000);
     }
 
     public void disableFlight() {

@@ -8,6 +8,9 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.mcloudtw.rf.Main;
 import dev.mcloudtw.rf.PlayerFlightManager;
+import dev.mcloudtw.rf.exceptions.NoResFlyPermissionException;
+import dev.mcloudtw.rf.exceptions.NotInResidenceException;
+import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 
@@ -15,46 +18,34 @@ import org.bukkit.Location;
 public class ResidenceFlyCommand {
     public static CommandAPICommand command() {
         return new CommandAPICommand("resfly")
-                .withPermission(CommandPermission.NONE)
+                .withPermission(CommandPermission.OP)
                 .withSubcommand(ResidenceFlyCommand.info())
                 .executesPlayer((player, args) -> {
-                    Location playerLocation = player.getLocation();
-                    ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(playerLocation);
-                    if (res == null) {
+                    try{
+                        if (PlayerUtils.playerToggleFly(player)) {
+                            player.sendMessage(MiniMessage.miniMessage().deserialize(
+                                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                            "<green>飛行已開啟</green>"
+                            ));
+                        }
+                        else{
+                            player.sendMessage(MiniMessage.miniMessage().deserialize(
+                                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                            "<red>飛行已關閉</red>"
+                            ));
+                        }
+                    }
+                    catch (NotInResidenceException e) {
                         player.sendMessage(MiniMessage.miniMessage().deserialize(
                                 "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                         "<red>你不在領地內，無法開啟飛行</red>"
                         ));
-                        return;
-                    }
-
-                    boolean hasFlightPermission = res.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);
-                    hasFlightPermission = hasFlightPermission || res.getPermissions().playerHas(player, Flags.admin, FlagPermissions.FlagCombo.OnlyTrue);
-                    hasFlightPermission = hasFlightPermission || res.isOwner(player);
-
-                    if (!hasFlightPermission) {
+                    } catch (NoResFlyPermissionException e) {
                         player.sendMessage(MiniMessage.miniMessage().deserialize(
                                 "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                         "<red>你沒有本領地的飛行權限</red>"
                         ));
-                        return;
                     }
-
-                    PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
-                    if (pfm.enabled) {
-                        pfm.disableFlight();
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(
-                                "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                        "<red>飛行已關閉</red>"
-                        ));
-                        return;
-                    }
-                    pfm.enableFlight();
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
-                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                    "<green>飛行已開啟</green>"
-                    ));
-
                 });
     }
 

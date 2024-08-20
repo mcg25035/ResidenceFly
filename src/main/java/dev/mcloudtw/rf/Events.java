@@ -2,7 +2,6 @@ package dev.mcloudtw.rf;
 
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.event.ResidenceChangedEvent;
-import com.bekvon.bukkit.residence.event.ResidencePlayerEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import dev.mcloudtw.rf.utils.PlayerUtils;
@@ -32,6 +31,7 @@ public class Events implements Listener {
                             "<red>你已經離開了領地，飛行已經被關閉 </red>"
             ));
         }
+
     }
 
     @EventHandler

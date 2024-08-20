@@ -24,15 +24,15 @@ public class PlayerFlyInfoExpansion extends PlaceholderExpansion {
     }
 
     public String formatTime(int seconds) {
-        int hours = seconds / 3600;
-        int minutes = (seconds % 3600) / 60;
-        int sec = seconds % 60;
-        return String.format("%02d小時 %02d分鐘 %02d秒", hours, minutes, sec).replaceAll("00小時 ", "").replaceAll("00分鐘 ", "");
+//        int hours = seconds / 3600;
+//        int minutes = (seconds % 3600) / 60;
+//        int sec = seconds % 60;
+//        return String.format("%02d小時 %02d分鐘 %02d秒", hours, minutes, sec).replaceAll("00小時 ", "").replaceAll("00分鐘 ", "");
+        return String.format("%02d", seconds);
     }
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String identifier) {
-        System.out.println(identifier);
         PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
         int totalTimeDefault = pfm.defaultSecondsLeft;
         int totalTimeAdditional = pfm.additionalSecondsLeft;
