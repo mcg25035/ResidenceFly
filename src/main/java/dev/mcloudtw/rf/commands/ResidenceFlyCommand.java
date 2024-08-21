@@ -1,9 +1,5 @@
 package dev.mcloudtw.rf.commands;
 
-import com.bekvon.bukkit.residence.Residence;
-import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.mcloudtw.rf.Main;
@@ -18,7 +14,7 @@ import org.bukkit.Location;
 public class ResidenceFlyCommand {
     public static CommandAPICommand command() {
         return new CommandAPICommand("resfly")
-                .withPermission(CommandPermission.OP)
+                .withPermission(CommandPermission.NONE)
                 .withSubcommand(ResidenceFlyCommand.info())
                 .executesPlayer((player, args) -> {
                     try{

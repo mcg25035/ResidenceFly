@@ -11,6 +11,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+
+import java.time.Instant;
+import java.util.HashMap;
 
 public class Events implements Listener {
     @EventHandler
@@ -31,7 +35,43 @@ public class Events implements Listener {
                             "<red>你已經離開了領地，飛行已經被關閉 </red>"
             ));
         }
+    }
 
+    public HashMap<Player, Instant> playerLastSneak = new HashMap<>();
+
+    @EventHandler
+    public void PlayerToggleSneakEvent(PlayerToggleSneakEvent event) {
+        if (event.isSneaking()) return;
+
+        Instant now = Instant.now();
+        Player player = event.getPlayer();
+        if (!playerLastSneak.containsKey(player)) {
+            playerLastSneak.put(player, Instant.now());
+            return;
+        }
+
+        Instant lastSneak = playerLastSneak.get(player);
+        if (now.toEpochMilli() - lastSneak.toEpochMilli() > 200) {
+            playerLastSneak.put(player, now);
+            return;
+        }
+
+        playerLastSneak.put(player, now);
+        try {
+            if (PlayerUtils.playerToggleFly(player)){
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                "<green>飛行已開啟</green>"
+                ));
+            }
+            else{
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                "<red>飛行已關閉</red>"
+                ));
+            }
+        }
+        catch (Exception ignored) {}
     }
 
     @EventHandler

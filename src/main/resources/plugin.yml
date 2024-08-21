@@ -2,3 +2,4 @@ name: ResidenceFly
 version: '${project.version}'
 main: dev.mcloudtw.rf.Main
 api-version: '1.20'
+depend: [Residence, PlaceholderAPI]
