@@ -7,6 +7,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.DoubleArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.OfflinePlayerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.mcloudtw.rf.Main;
 import dev.mcloudtw.rf.PlayerFlightManager;
@@ -28,6 +29,7 @@ public class ResidenceFlyAdminCommand {
                 .withSubcommand(ResidenceFlyAdminCommand.scale())
                 .withSubcommand(ResidenceFlyAdminCommand.reset())
                 .withSubcommand(ResidenceFlyAdminCommand.add())
+                .withSubcommand(ResidenceFlyAdminCommand.info())
                 .withSubcommand(ResidenceFlyAdminCommand.import_from_tempfly());
     }
 
@@ -42,6 +44,33 @@ public class ResidenceFlyAdminCommand {
                                     "<gradient:red:gold>全服飛行時間倍率已更改為 " + scale + "x</gradient>"
                     ));
                 });
+    }
+
+    private static CommandAPICommand info() {
+        return new CommandAPICommand("info")
+                .withArguments(new OfflinePlayerArgument("player"))
+                .executesPlayer((player, args) -> {
+                    OfflinePlayer playerToOperate = (OfflinePlayer) args.get("player");
+                    PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(playerToOperate);
+                    int leftTime = pfm.defaultSecondsLeft + pfm.additionalSecondsLeft;
+                    int maxTime = Main.plugin.defaultPlayerFlightSeconds + pfm.additionalSecondsLeft;
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<white> "+player.getName()+" 的飛行狀態: " + (pfm.enabled ? "<green>開啟</green>" : "<red>關閉</red>") +"</white>"
+                    ));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<white> "+player.getName()+" 還有 <yellow>" + leftTime + "</yellow> (秒)，最大 <yellow>" + maxTime + "</yellow> (秒)的飛行時間</white>"
+                    ));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<white>飛行時間倍率為 <yellow>" + Main.plugin.currentBasePlayerFlightSecondsScale + "x</yellow></white>"
+                    ));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<white>飛行時間將在每日 <yellow>" + Main.plugin.dailyResetTime + "</yellow> 重置</white>"
+                    ));
+        });
     }
 
     private static CommandAPICommand import_from_tempfly() {
