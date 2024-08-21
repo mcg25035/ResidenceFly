@@ -9,9 +9,11 @@ import dev.mcloudtw.rf.exceptions.NoResFlyPermissionException;
 import dev.mcloudtw.rf.exceptions.NotInResidenceException;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public class PlayerUtils {
     public static void safeLandPlayer(Player player) {
+        Vector direction = player.getLocation().getDirection();
         player.setAllowFlight(false);
         player.setFlying(false);
         Location safeLanding = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().add(0, 1, 0);
@@ -22,7 +24,16 @@ public class PlayerUtils {
             safeLanding.subtract(0, 1, 0);
         }
         safeLanding.add(0, 1, 0);
+        safeLanding.setDirection(direction);
         player.teleport(safeLanding);
+    }
+
+    public static boolean canPlayerFly(Player player, ClaimedResidence res) {
+        boolean hasFlightPermission = res.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);
+        hasFlightPermission = hasFlightPermission && res.getPermissions().playerHas(player, Flags.move, FlagPermissions.FlagCombo.TrueOrNone);
+        hasFlightPermission = hasFlightPermission || res.getPermissions().playerHas(player, Flags.admin, FlagPermissions.FlagCombo.OnlyTrue);
+        hasFlightPermission = hasFlightPermission || res.isOwner(player);
+        return hasFlightPermission;
     }
 
     public static boolean playerToggleFly(Player player) throws NotInResidenceException, NoResFlyPermissionException {
@@ -32,18 +43,13 @@ public class PlayerUtils {
             throw new NotInResidenceException();
         }
 
-        boolean hasFlightPermission = res.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);
-        hasFlightPermission = hasFlightPermission || res.getPermissions().playerHas(player, Flags.admin, FlagPermissions.FlagCombo.OnlyTrue);
-        hasFlightPermission = hasFlightPermission || res.isOwner(player);
-
-        if (!hasFlightPermission) {
-            throw new NoResFlyPermissionException();
-        }
-
         PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
         if (pfm.enabled) {
             pfm.disableFlight();
             return false;
+        }
+        if (!canPlayerFly(player, res)) {
+            throw new NoResFlyPermissionException();
         }
         pfm.enableFlight();
         return true;

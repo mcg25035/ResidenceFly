@@ -1,5 +1,7 @@
 package dev.mcloudtw.rf;
 
+import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -96,6 +98,16 @@ public class PlayerFlightManager {
         if (autoSave.getAndIncrement() % 60 == 0) {
             saveToFile();
         }
+
+        ClaimedResidence residence = Residence.getInstance().getResidenceManager().getByLoc(player.getLocation());
+        if (residence != null && !PlayerUtils.canPlayerFly(player.getPlayer(), residence)) {
+            player.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                            "<red>你不再擁有本領地的飛行權限</red>"
+            ));
+            disableFlight();
+        }
+
         if (defaultSecondsLeft + additionalSecondsLeft <= 0) {
             player.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(
                     "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +

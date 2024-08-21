@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.nio.file.LinkOption;
 import java.util.Date;
 
 public final class Main extends JavaPlugin {
