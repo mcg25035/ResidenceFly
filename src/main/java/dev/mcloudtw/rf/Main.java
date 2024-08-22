@@ -3,8 +3,10 @@ package dev.mcloudtw.rf;
 import dev.mcloudtw.rf.commands.ResidenceFlyAdminCommand;
 import dev.mcloudtw.rf.commands.ResidenceFlyCommand;
 import dev.mcloudtw.rf.placeholder.PlayerFlyInfoExpansion;
+import dev.mcloudtw.rf.utils.PlayerUtils;
 import dev.mcloudtw.rf.utils.TimeUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -88,6 +90,21 @@ public final class Main extends JavaPlugin {
         saveConfig();
     }
 
+    public void syncPlayerFlyStatus(Player player) {
+        PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
+        boolean bukkitFlyStatus = player.getAllowFlight();
+        if (bukkitFlyStatus == pfm.enabled) return;
+        if (bukkitFlyStatus) {
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                PlayerUtils.safeLandPlayer(player);
+            }, 20);
+        }
+        if (pfm.enabled) {
+            player.setAllowFlight(true);
+            player.setFlying(true);
+        }
+    }
+
 
 
     @Override
@@ -108,6 +125,8 @@ public final class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         new PlayerFlyInfoExpansion().register();
+
+        Bukkit.getOnlinePlayers().forEach(this::syncPlayerFlyStatus);
     }
 
     @Override

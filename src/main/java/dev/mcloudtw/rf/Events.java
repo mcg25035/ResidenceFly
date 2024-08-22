@@ -11,12 +11,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 import java.time.Instant;
 import java.util.HashMap;
 
 public class Events implements Listener {
+    @EventHandler
+    public void PlayerTeleportEvent(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        Main.plugin.syncPlayerFlyStatus(player);
+    }
+
     @EventHandler
     public void ResidenceChangedEvent(ResidenceChangedEvent event) {
         Player player = event.getPlayer();
