@@ -151,7 +151,11 @@ public class PlayerFlightManager {
         if (!this.player.isOnline()) return;
         Player player = this.player.getPlayer();
         assert player != null;
-        PlayerUtils.safeLandPlayer(player);
+        try{
+            PlayerUtils.safeLandPlayer(player);
+        }
+        catch (Exception ignored) {}
+
 
     }
 

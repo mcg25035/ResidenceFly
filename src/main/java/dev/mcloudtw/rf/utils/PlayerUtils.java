@@ -7,14 +7,16 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import dev.mcloudtw.rf.PlayerFlightManager;
 import dev.mcloudtw.rf.exceptions.NoResFlyPermissionException;
 import dev.mcloudtw.rf.exceptions.NotInResidenceException;
+import dev.mcloudtw.rf.exceptions.WrongGamemodeException;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class PlayerUtils {
-    public static void safeLandPlayer(Player player) {
-        if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) return;
+    public static void safeLandPlayer(Player player) throws WrongGamemodeException {
+        if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR)
+            throw new WrongGamemodeException();
         Vector direction = player.getLocation().getDirection();
         player.setAllowFlight(false);
         player.setFlying(false);

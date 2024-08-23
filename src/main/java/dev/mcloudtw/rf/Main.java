@@ -100,11 +100,14 @@ public final class Main extends JavaPlugin {
             player.setFlying(true);
         }
         if (bukkitFlyStatus) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                            "<red>你的飛行狀態異常，已關閉飛行。 </red>"
-            ));
-            PlayerUtils.safeLandPlayer(player);
+            try{
+                PlayerUtils.safeLandPlayer(player);
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                "<red>你的飛行狀態異常，已關閉並同步飛行狀態。 </red>"
+                ));
+            }
+            catch (Exception ignored) {}
         }
 
     }

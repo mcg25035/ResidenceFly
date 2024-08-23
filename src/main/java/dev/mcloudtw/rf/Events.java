@@ -4,6 +4,7 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.event.ResidenceChangedEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
+import dev.mcloudtw.rf.exceptions.WrongGamemodeException;
 import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -78,7 +79,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void PlayerJoinEvent(PlayerJoinEvent event) {
+    public void PlayerJoinEvent(PlayerJoinEvent event) throws WrongGamemodeException {
         if (!event.getPlayer().getAllowFlight()) return;
         PlayerUtils.safeLandPlayer(event.getPlayer());
     }
