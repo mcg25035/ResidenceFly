@@ -19,15 +19,11 @@ import java.util.HashMap;
 
 public class Events implements Listener {
     @EventHandler
-    public void PlayerTeleportEvent(PlayerTeleportEvent event) {
-        Player player = event.getPlayer();
-        Main.plugin.syncPlayerFlyStatus(player);
-    }
-
-    @EventHandler
     public void ResidenceChangedEvent(ResidenceChangedEvent event) {
+
         Player player = event.getPlayer();
         ClaimedResidence resDest = event.getTo();
+
         boolean hasFlightPermission = false;
         if (resDest != null) {
             hasFlightPermission = resDest.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);

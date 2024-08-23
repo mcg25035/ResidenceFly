@@ -5,6 +5,7 @@ import dev.mcloudtw.rf.commands.ResidenceFlyCommand;
 import dev.mcloudtw.rf.placeholder.PlayerFlyInfoExpansion;
 import dev.mcloudtw.rf.utils.PlayerUtils;
 import dev.mcloudtw.rf.utils.TimeUtils;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -94,15 +95,18 @@ public final class Main extends JavaPlugin {
         PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
         boolean bukkitFlyStatus = player.getAllowFlight();
         if (bukkitFlyStatus == pfm.enabled) return;
-        if (bukkitFlyStatus) {
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                PlayerUtils.safeLandPlayer(player);
-            }, 20);
-        }
         if (pfm.enabled) {
             player.setAllowFlight(true);
             player.setFlying(true);
         }
+        if (bukkitFlyStatus) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                            "<red>你的飛行狀態異常，已關閉飛行。 </red>"
+            ));
+            PlayerUtils.safeLandPlayer(player);
+        }
+
     }
 
 
@@ -125,8 +129,10 @@ public final class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         new PlayerFlyInfoExpansion().register();
-
-        Bukkit.getOnlinePlayers().forEach(this::syncPlayerFlyStatus);
+        Bukkit.getScheduler().runTaskTimer(this, ()-> {
+            Bukkit.getOnlinePlayers().forEach(this::syncPlayerFlyStatus);
+        }, 0, 20);
+        Bukkit.getScheduler().runTaskLater(this, this::updateAllPlayerFlightData, 20);
     }
 
     @Override
