@@ -12,11 +12,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Events implements Listener {
     @EventHandler
@@ -41,11 +41,13 @@ public class Events implements Listener {
         }
     }
 
+    public static HashSet<Player> disableFlyShortcut = new HashSet<>();
     public HashMap<Player, Instant> playerLastSneak = new HashMap<>();
 
     @EventHandler
     public void PlayerToggleSneakEvent(PlayerToggleSneakEvent event) {
         if (event.isSneaking()) return;
+        if (disableFlyShortcut.contains(event.getPlayer())) return;
 
         Instant now = Instant.now();
         Player player = event.getPlayer();

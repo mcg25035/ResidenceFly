@@ -102,10 +102,7 @@ public final class Main extends JavaPlugin {
         if (bukkitFlyStatus) {
             try{
                 PlayerUtils.safeLandPlayer(player);
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                "<red>你的飛行狀態異常，已關閉並同步飛行狀態。 </red>"
-                ));
+                Bukkit.getLogger().warning("Player " + player.getName() + " is flying but resfly is not enabled!");
             }
             catch (Exception ignored) {}
         }

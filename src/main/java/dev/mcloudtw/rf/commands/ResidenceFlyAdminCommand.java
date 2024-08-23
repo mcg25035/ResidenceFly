@@ -51,16 +51,24 @@ public class ResidenceFlyAdminCommand {
                 .withArguments(new OfflinePlayerArgument("player"))
                 .executesPlayer((player, args) -> {
                     OfflinePlayer playerToOperate = (OfflinePlayer) args.get("player");
+                    if (playerToOperate == null) {
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                        "<red>玩家不存在</red>"
+                        ));
+                        return;
+                    }
                     PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(playerToOperate);
+                    String playerName = playerToOperate.getName();
                     int leftTime = pfm.defaultSecondsLeft + pfm.additionalSecondsLeft;
                     int maxTime = Main.plugin.defaultPlayerFlightSeconds + pfm.additionalSecondsLeft;
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                    "<white> "+player.getName()+" 的飛行狀態: " + (pfm.enabled ? "<green>開啟</green>" : "<red>關閉</red>") +"</white>"
+                                    "<white> "+playerName+" 的飛行狀態: " + (pfm.enabled ? "<green>開啟</green>" : "<red>關閉</red>") +"</white>"
                     ));
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
-                                    "<white> "+player.getName()+" 還有 <yellow>" + leftTime + "</yellow> (秒)，最大 <yellow>" + maxTime + "</yellow> (秒)的飛行時間</white>"
+                                    "<white> "+playerName+" 還有 <yellow>" + leftTime + "</yellow> (秒)，最大 <yellow>" + maxTime + "</yellow> (秒)的飛行時間</white>"
                     ));
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +

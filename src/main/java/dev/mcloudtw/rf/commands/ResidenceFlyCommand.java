@@ -2,6 +2,7 @@ package dev.mcloudtw.rf.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.mcloudtw.rf.Events;
 import dev.mcloudtw.rf.Main;
 import dev.mcloudtw.rf.PlayerFlightManager;
 import dev.mcloudtw.rf.exceptions.NoResFlyPermissionException;
@@ -16,6 +17,7 @@ public class ResidenceFlyCommand {
         return new CommandAPICommand("resfly")
                 .withPermission(CommandPermission.NONE)
                 .withSubcommand(ResidenceFlyCommand.info())
+                .withSubcommand(ResidenceFlyCommand.toggle_sc())
                 .executesPlayer((player, args) -> {
                     try{
                         if (PlayerUtils.playerToggleFly(player)) {
@@ -57,6 +59,10 @@ public class ResidenceFlyCommand {
                     ));
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<white>飛行快捷鍵: " + (Events.disableFlyShortcut.contains(player) ? "<green>開啟</green>" : "<red>關閉</red>") +"</white>"
+                    ));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white>你還有 <yellow>" + leftTime + "</yellow> (秒)，最大 <yellow>" + maxTime + "</yellow> (秒)的飛行時間</white>"
                     ));
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
@@ -69,5 +75,25 @@ public class ResidenceFlyCommand {
                     ));
                 });
 
+    }
+
+    private static CommandAPICommand toggle_sc() {
+        return new CommandAPICommand("toggle_sc")
+                .executesPlayer((player, args) -> {
+                    if (Events.disableFlyShortcut.contains(player)) {
+                        Events.disableFlyShortcut.remove(player);
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                        "<green>飛行快捷鍵已開啟</green>"
+                        ));
+                    }
+                    else {
+                        Events.disableFlyShortcut.add(player);
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                        "<red>飛行快捷鍵已關閉</red>"
+                        ));
+                    }
+                });
     }
 }
