@@ -7,12 +7,15 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import dev.mcloudtw.rf.exceptions.WrongGamemodeException;
 import dev.mcloudtw.rf.utils.PlayerUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -80,7 +83,33 @@ public class Events implements Listener {
         catch (Exception ignored) {}
     }
 
+    public static HashMap<Player, BukkitTask> playerOnGroundTask = new HashMap<>();
+
     @EventHandler
+    public void PlayerToggleFlightEvent(PlayerToggleFlightEvent event) {
+        if (event.isFlying()) {
+            BukkitTask task = playerOnGroundTask.get(event.getPlayer());
+            if (task == null) return;
+            task.cancel();
+            return;
+        }
+
+        playerOnGroundTask.put(
+                event.getPlayer(),
+                Bukkit.getScheduler().runTaskLater(Main.plugin, ()->{
+                    PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(event.getPlayer());
+                    if (!pfm.enabled) return;
+                    pfm.disableFlight();
+                    event.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(
+                            "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
+                                    "<red>由於你不在飛行狀態太久，飛行已自動關閉</red>"
+                    ));
+                }, 200)
+        );
+
+    }
+
+                                     @EventHandler
     public void PlayerJoinEvent(PlayerJoinEvent event) throws WrongGamemodeException {
         if (!event.getPlayer().getAllowFlight()) return;
         PlayerUtils.safeLandPlayer(event.getPlayer());

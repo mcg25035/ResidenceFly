@@ -17,9 +17,12 @@ public class PlayerUtils {
     public static void safeLandPlayer(Player player) throws WrongGamemodeException {
         if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR)
             throw new WrongGamemodeException();
+        boolean isFlying = player.isFlying();
         player.setAllowFlight(false);
         player.setFlying(false);
         if (player.isGliding()) return;
+        if (player.isOnGround()) return;
+        if (!isFlying) return;
         Vector direction = player.getLocation().getDirection();
         Location safeLanding = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().add(0, 1, 0);
         if (safeLanding.getBlockY() <= player.getLocation().getBlockY()) player.teleport(safeLanding);
@@ -60,28 +63,4 @@ public class PlayerUtils {
         return true;
     }
 
-    public static boolean playerToggleFly(Player player, boolean enable) throws NotInResidenceException, NoResFlyPermissionException {
-        Location playerLocation = player.getLocation();
-        ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(playerLocation);
-        if (res == null) {
-            throw new NotInResidenceException();
-        }
-
-        boolean hasFlightPermission = res.getPermissions().playerHas(player, Flags.fly, FlagPermissions.FlagCombo.TrueOrNone);
-        hasFlightPermission = hasFlightPermission || res.getPermissions().playerHas(player, Flags.admin, FlagPermissions.FlagCombo.OnlyTrue);
-        hasFlightPermission = hasFlightPermission || res.isOwner(player);
-
-        if (!hasFlightPermission) {
-            throw new NoResFlyPermissionException();
-        }
-
-        PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(player);
-        if (pfm.enabled == enable) return false;
-        if (enable) {
-            pfm.enableFlight();
-        } else {
-            pfm.disableFlight();
-        }
-        return true;
-    }
 }

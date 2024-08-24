@@ -9,6 +9,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -147,6 +148,11 @@ public class PlayerFlightManager {
         enabled = false;
         task.cancel();
         saveToFile();
+
+        BukkitTask task = Events.playerOnGroundTask.get(player.getPlayer());
+        if (task != null) {
+            task.cancel();
+        }
 
         if (!this.player.isOnline()) return;
         Player player = this.player.getPlayer();
