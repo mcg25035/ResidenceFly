@@ -17,9 +17,10 @@ public class PlayerUtils {
     public static void safeLandPlayer(Player player) throws WrongGamemodeException {
         if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR)
             throw new WrongGamemodeException();
-        Vector direction = player.getLocation().getDirection();
         player.setAllowFlight(false);
         player.setFlying(false);
+        if (player.isGliding()) return;
+        Vector direction = player.getLocation().getDirection();
         Location safeLanding = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().add(0, 1, 0);
         if (safeLanding.getBlockY() <= player.getLocation().getBlockY()) player.teleport(safeLanding);
 
