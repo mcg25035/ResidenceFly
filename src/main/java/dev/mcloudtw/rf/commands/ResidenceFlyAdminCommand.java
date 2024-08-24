@@ -36,7 +36,7 @@ public class ResidenceFlyAdminCommand {
     private static CommandAPICommand scale() {
         return new CommandAPICommand("scale")
                 .withArguments(new DoubleArgument("scale"))
-                .executesPlayer((player, args) -> {
+                .executes((sender, args) -> {
                     double scale = (double) args.get("scale");
                     Main.plugin.scaleEdit(scale);
                     Bukkit.broadcast(MiniMessage.miniMessage().deserialize(
@@ -49,10 +49,10 @@ public class ResidenceFlyAdminCommand {
     private static CommandAPICommand info() {
         return new CommandAPICommand("info")
                 .withArguments(new OfflinePlayerArgument("player"))
-                .executesPlayer((player, args) -> {
+                .executes((sender, args) -> {
                     OfflinePlayer playerToOperate = (OfflinePlayer) args.get("player");
                     if (playerToOperate == null) {
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        sender.sendMessage(MiniMessage.miniMessage().deserialize(
                                 "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                         "<red>玩家不存在</red>"
                         ));
@@ -62,19 +62,19 @@ public class ResidenceFlyAdminCommand {
                     String playerName = playerToOperate.getName();
                     int leftTime = pfm.defaultSecondsLeft + pfm.additionalSecondsLeft;
                     int maxTime = Main.plugin.defaultPlayerFlightSeconds + pfm.additionalSecondsLeft;
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white> "+playerName+" 的飛行狀態: " + (pfm.enabled ? "<green>開啟</green>" : "<red>關閉</red>") +"</white>"
                     ));
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white> "+playerName+" 還有 <yellow>" + leftTime + "</yellow> (秒)，最大 <yellow>" + maxTime + "</yellow> (秒)的飛行時間</white>"
                     ));
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white>飛行時間倍率為 <yellow>" + Main.plugin.currentBasePlayerFlightSecondsScale + "x</yellow></white>"
                     ));
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white>飛行時間將在每日 <yellow>" + Main.plugin.dailyResetTime + "</yellow> 重置</white>"
                     ));
@@ -83,10 +83,10 @@ public class ResidenceFlyAdminCommand {
 
     private static CommandAPICommand import_from_tempfly() {
         return new CommandAPICommand("import_from_tempfly")
-                .executesPlayer((player, args) -> {
+                .executes((sender, args) -> {
                     File tempFlyData = Path.of("plugins/TempFly/data.yml").toFile();
                     if (!tempFlyData.exists()) {
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        sender.sendMessage(MiniMessage.miniMessage().deserialize(
                                 "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                         "<red>TempFly 資料檔案不存在</red>"
                         ));
@@ -100,7 +100,7 @@ public class ResidenceFlyAdminCommand {
                         int time = (int) Math.round(
                                 players.getConfigurationSection(uuid).getDouble("time")
                         );
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        sender.sendMessage(MiniMessage.miniMessage().deserialize(
                                 "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                         "<white>正在匯入 " + uuid + " 的飛行時間 " + time + " 秒</white>"
                         ));
@@ -114,7 +114,7 @@ public class ResidenceFlyAdminCommand {
 
     private static CommandAPICommand reset() {
         return new CommandAPICommand("reset")
-                .executesPlayer((player, args) -> {
+                .executes((player, args) -> {
                     Main.plugin.scaleReset();
                     Bukkit.broadcast(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
@@ -128,14 +128,14 @@ public class ResidenceFlyAdminCommand {
         return new CommandAPICommand("add")
                 .withArguments(new IntegerArgument("time"))
                 .withArguments(new StringArgument("player"))
-                .executesPlayer((player, args) -> {
+                .executes((sender, args) -> {
                     String playerName = (String) args.get("player");
                     assert playerName != null;
                     Player playerToOperate = Bukkit.getPlayer(playerName);
                     PlayerFlightManager pfm = PlayerFlightManager.loadPlayerFlightData(playerToOperate);
                     pfm.additionalSecondsLeft += (int) args.get("time");
                     pfm.saveToFile();
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(
                             "<gray>[</gray><gold>領地飛行</gold><gray>]</gray> " +
                                     "<white>" + playerName + " 的飛行時間已增加 " + args.get("time") + "秒</white>"
                     ));
