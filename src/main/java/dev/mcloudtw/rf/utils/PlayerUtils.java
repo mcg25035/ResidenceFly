@@ -24,12 +24,18 @@ public class PlayerUtils {
         if (player.isOnGround()) return;
         if (!isFlying) return;
         Vector direction = player.getLocation().getDirection();
-        Location safeLanding = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().add(0, 1, 0);
-        if (safeLanding.getBlockY() <= player.getLocation().getBlockY()) player.teleport(safeLanding);
+        Location safeLanding = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation();
+        if (safeLanding.getBlockY() <= player.getLocation().getBlockY()) {
+            if (safeLanding.getBlock().isEmpty()) return;
+            safeLanding.setDirection(direction);
+            player.teleport(safeLanding.add(0, 1, 0));
+            return;
+        }
 
         safeLanding = player.getLocation();
         while (safeLanding.getBlock().isPassable() && !safeLanding.getBlock().isLiquid()) {
             safeLanding.subtract(0, 1, 0);
+            if (safeLanding.getBlockY() < -64) return;
         }
         safeLanding.add(0, 1, 0);
         safeLanding.setDirection(direction);
