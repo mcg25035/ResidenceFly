@@ -17,7 +17,7 @@ public class ResidenceFlyCommand {
         return new CommandAPICommand("resfly")
                 .withPermission(CommandPermission.NONE)
                 .withSubcommand(ResidenceFlyCommand.info())
-                .withSubcommand(ResidenceFlyCommand.toggle_sc())
+                .withSubcommand(ResidenceFlyCommand.toggle())
                 .executesPlayer((player, args) -> {
                     try{
                         if (PlayerUtils.playerToggleFly(player)) {
@@ -80,8 +80,8 @@ public class ResidenceFlyCommand {
 
     }
 
-    private static CommandAPICommand toggle_sc() {
-        return new CommandAPICommand("toggle_sc")
+    private static CommandAPICommand toggle() {
+        return new CommandAPICommand("toggle")
                 .executesPlayer((player, args) -> {
                     if (Events.disableFlyShortcut.contains(player)) {
                         Events.disableFlyShortcut.remove(player);
