@@ -5,10 +5,7 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.DoubleArgument;
-import dev.jorel.commandapi.arguments.IntegerArgument;
-import dev.jorel.commandapi.arguments.OfflinePlayerArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.*;
 import dev.mcloudtw.rf.Main;
 import dev.mcloudtw.rf.PlayerFlightManager;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -48,7 +45,7 @@ public class ResidenceFlyAdminCommand {
 
     private static CommandAPICommand info() {
         return new CommandAPICommand("info")
-                .withArguments(new OfflinePlayerArgument("player"))
+                .withArguments(new EntitySelectorArgument.OnePlayer("player"))
                 .executes((sender, args) -> {
                     OfflinePlayer playerToOperate = (OfflinePlayer) args.get("player");
                     if (playerToOperate == null) {
