@@ -102,7 +102,6 @@ public final class Main extends JavaPlugin {
         if (bukkitFlyStatus) {
             try{
                 PlayerUtils.safeLandPlayer(player);
-                Bukkit.getLogger().warning("Player " + player.getName() + " is flying but resfly is not enabled!");
             }
             catch (Exception ignored) {}
         }
